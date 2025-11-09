@@ -1,0 +1,47 @@
+﻿{
+    "siteId":  "d9cd38d5-debb-46dd-8935-892adffd49fa",
+    "name":  "My Demo Site",
+    "domain":  "demo20251109175616.example.com",
+    "exportedAt":  "2025-11-09T17:56:16.4154517Z",
+    "pages":  [
+                  {
+                      "id":  "3d7e49ff-52c3-42ad-8872-adc1c99c5914",
+                      "title":  "Welcome to Our Site",
+                      "slug":  "welcome-page",
+                      "isPublished":  true,
+                      "contents":  [
+
+                                   ]
+                  }
+              ],
+    "products":  [
+                     {
+                         "id":  "b5324830-a0b8-4d6e-9d66-8dddf090c2a3",
+                         "name":  "Premium Widget",
+                         "description":  "Our best-selling widget",
+                         "price":  99.99,
+                         "imageUrl":  null
+                     }
+                 ],
+    "destinations":  [
+                         {
+                             "id":  "f8971b9f-c7c5-499f-91b4-1eba4d9c7360",
+                             "name":  "Paris",
+                             "description":  "The City of Light",
+                             "location":  "paris",
+                             "isPublished":  true,
+                             "tours":  [
+                                           {
+                                               "id":  "7b6f4ed7-a275-4c50-8fff-5732b5ad4add",
+                                               "name":  "Paris City Tour",
+                                               "description":  "Explore the best of Paris",
+                                               "price":  299.99,
+                                               "duration":  0
+                                           }
+                                       ]
+                         }
+                     ],
+    "media":  [
+
+              ]
+}

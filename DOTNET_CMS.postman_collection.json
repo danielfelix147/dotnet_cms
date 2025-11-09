@@ -1,0 +1,1141 @@
+{
+	"info": {
+		"_postman_id": "cms-api-collection-2024",
+		"name": "DOTNET CMS API",
+		"description": "Complete API collection for DOTNET CMS. Includes authentication (8), sites with site users (8), pages (5), products (5), destinations (5), users (5), plugins (8), media (3), and content export (3) - Total: 50 endpoints.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5055",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "siteId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "pageId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "productId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "destinationId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "mediaId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "pluginId",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('token', jsonData.token);",
+									"    pm.collectionVariables.set('userId', jsonData.user.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@cms.com\",\n  \"password\": \"Admin@123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login"]
+						},
+						"description": "Login with email and password. Default admin credentials: admin@cms.com / Admin@123"
+					},
+					"response": []
+				},
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('token', jsonData.token);",
+									"    pm.collectionVariables.set('userId', jsonData.user.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"newuser@cms.com\",\n  \"password\": \"User@123\",\n  \"firstName\": \"New\",\n  \"lastName\": \"User\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "register"]
+						},
+						"description": "Register a new user account (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('token', jsonData.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refreshToken\": \"your-refresh-token-here\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/refresh",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "refresh"]
+						},
+						"description": "Refresh the authentication token using refresh token"
+					},
+					"response": []
+				},
+				{
+					"name": "Revoke Token",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/revoke",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "revoke"]
+						},
+						"description": "Revoke the current user's refresh token"
+					},
+					"response": []
+				},
+				{
+					"name": "Assign Role",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{userId}}\",\n  \"role\": \"Editor\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/assign-role",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "assign-role"]
+						},
+						"description": "Assign a role to a user (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Roles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/user-roles/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "user-roles", "{{userId}}"]
+						},
+						"description": "Get all roles assigned to a user (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Forgot Password",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@cms.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/forgot-password",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "forgot-password"]
+						},
+						"description": "Request a password reset. A reset token will be logged to the console (check server logs). In production, this would be sent via email."
+					},
+					"response": []
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"token\": \"PASTE_TOKEN_FROM_CONSOLE_HERE\",\n  \"newPassword\": \"NewPassword@123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/reset-password",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "reset-password"]
+						},
+						"description": "Reset password using the token from forgot-password. Token is valid for 24 hours and can only be used once."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Sites",
+			"item": [
+				{
+					"name": "Get All Sites",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/sites",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "sites"]
+						},
+						"description": "Retrieve all sites"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Site By Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/sites/{{siteId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "sites", "{{siteId}}"]
+						},
+						"description": "Retrieve a specific site by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Site",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('siteId', jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"My Travel Site\",\n  \"domain\": \"mytravelsite.com\",\n  \"description\": \"A premium travel website\",\n  \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/sites",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "sites"]
+						},
+						"description": "Create a new site"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Site",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"My Updated Travel Site\",\n  \"domain\": \"mytravelsite.com\",\n  \"description\": \"An updated premium travel website\",\n  \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/sites/{{siteId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "sites", "{{siteId}}"]
+						},
+						"description": "Update an existing site"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Site",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/sites/{{siteId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "sites", "{{siteId}}"]
+						},
+						"description": "Delete a site"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Site Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/sites/{{siteId}}/users",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "sites", "{{siteId}}", "users"]
+						},
+						"description": "Get all users assigned to a site (Admin/Editor)"
+					},
+					"response": []
+				},
+				{
+					"name": "Assign User To Site",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{userId}}\",\n  \"role\": \"Editor\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/sites/{{siteId}}/users",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "sites", "{{siteId}}", "users"]
+						},
+						"description": "Assign a user to a site with a role (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Remove User From Site",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/sites/{{siteId}}/users/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "sites", "{{siteId}}", "users", "{{userId}}"]
+						},
+						"description": "Remove a user from a site (Admin only)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Pages",
+			"item": [
+				{
+					"name": "Get Pages By Site",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/pages?siteId={{siteId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "pages"],
+							"query": [
+								{
+									"key": "siteId",
+									"value": "{{siteId}}"
+								}
+							]
+						},
+						"description": "Retrieve pages for a specific site"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Page By Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/pages/{{pageId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "pages", "{{pageId}}"]
+						},
+						"description": "Retrieve a specific page by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Page",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('pageId', jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"siteId\": \"{{siteId}}\",\n  \"pageId\": \"home\",\n  \"title\": \"Home Page\",\n  \"content\": \"<h1>Welcome to our travel site</h1>\",\n  \"description\": \"Homepage with travel destinations\",\n  \"isPublished\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/pages",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "pages"]
+						},
+						"description": "Create a new page"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Page",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"siteId\": \"{{siteId}}\",\n  \"pageId\": \"home\",\n  \"title\": \"Updated Home Page\",\n  \"content\": \"<h1>Welcome to our updated travel site</h1>\",\n  \"description\": \"Updated homepage with more destinations\",\n  \"isPublished\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/pages/{{pageId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "pages", "{{pageId}}"]
+						},
+						"description": "Update an existing page"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Page",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/pages/{{pageId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "pages", "{{pageId}}"]
+						},
+						"description": "Delete a page"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "Get All Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products"]
+						},
+						"description": "Retrieve all products"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Product By Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/{{productId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "{{productId}}"]
+						},
+						"description": "Retrieve a specific product by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('productId', jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"productId\": \"travel-package-001\",\n  \"name\": \"European Adventure Package\",\n  \"description\": \"10-day tour across Europe\",\n  \"price\": 2499.99,\n  \"isPublished\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/products",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products"]
+						},
+						"description": "Create a new product"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Product",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"productId\": \"travel-package-001\",\n  \"name\": \"Premium European Adventure\",\n  \"description\": \"Luxury 10-day tour across Europe\",\n  \"price\": 3499.99,\n  \"isPublished\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/products/{{productId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "{{productId}}"]
+						},
+						"description": "Update an existing product"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/{{productId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "{{productId}}"]
+						},
+						"description": "Delete a product"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Destinations",
+			"item": [
+				{
+					"name": "Get All Destinations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/destinations",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "destinations"]
+						},
+						"description": "Retrieve all destinations"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Destination By Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/destinations/{{destinationId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "destinations", "{{destinationId}}"]
+						},
+						"description": "Retrieve a specific destination by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Destination",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('destinationId', jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"siteId\": \"{{siteId}}\",\n  \"destinationId\": \"paris-france\",\n  \"name\": \"Paris, France\",\n  \"description\": \"The City of Light - Romance, culture, and gastronomy\",\n  \"isPublished\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/destinations",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "destinations"]
+						},
+						"description": "Create a new destination"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Destination",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"siteId\": \"{{siteId}}\",\n  \"destinationId\": \"paris-france\",\n  \"name\": \"Paris, France\",\n  \"description\": \"Updated: The City of Light - Discover romance, world-class museums, and exquisite cuisine\",\n  \"isPublished\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/destinations/{{destinationId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "destinations", "{{destinationId}}"]
+						},
+						"description": "Update an existing destination"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Destination",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/destinations/{{destinationId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "destinations", "{{destinationId}}"]
+						},
+						"description": "Delete a destination"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users"]
+						},
+						"description": "Retrieve all users"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User By Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "{{userId}}"]
+						},
+						"description": "Retrieve a specific user by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"newuser@cms.com\",\n  \"password\": \"User@123\",\n  \"firstName\": \"New\",\n  \"lastName\": \"User\",\n  \"roles\": [\"Editor\"]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users"]
+						},
+						"description": "Create a new user (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update User",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"updateduser@cms.com\",\n  \"firstName\": \"Updated\",\n  \"lastName\": \"User\",\n  \"roles\": [\"Editor\", \"Author\"]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "{{userId}}"]
+						},
+						"description": "Update an existing user"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "{{userId}}"]
+						},
+						"description": "Delete a user"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Plugins",
+			"item": [
+				{
+					"name": "Get All Registered Plugins",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/plugins",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "plugins"]
+						},
+						"description": "Get all plugins registered in DI container"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Database Plugins",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.length > 0) {",
+									"        pm.collectionVariables.set('pluginId', jsonData[0].id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/plugins/database",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "plugins", "database"]
+						},
+						"description": "Get all plugins from database with IDs"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Plugin By System Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/plugins/PageManagement",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "plugins", "PageManagement"]
+						},
+						"description": "Get specific plugin by system name (PageManagement, ProductManagement, TravelManagement)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Site Plugins",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/plugins/site/{{siteId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "plugins", "site", "{{siteId}}"]
+						},
+						"description": "Get all plugins enabled for a specific site"
+					},
+					"response": []
+				},
+				{
+					"name": "Enable Plugin for Site",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"configuration\": null\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/plugins/site/{{siteId}}/enable/{{pluginId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "plugins", "site", "{{siteId}}", "enable", "{{pluginId}}"]
+						},
+						"description": "Enable a plugin for a site (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Disable Plugin for Site",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/plugins/site/{{siteId}}/disable/{{pluginId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "plugins", "site", "{{siteId}}", "disable", "{{pluginId}}"]
+						},
+						"description": "Disable a plugin for a site (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Plugin Configuration",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"configuration\": \"{\\\"theme\\\":\\\"dark\\\",\\\"showImages\\\":true}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/plugins/site/{{siteId}}/plugin/{{pluginId}}/config",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "plugins", "site", "{{siteId}}", "plugin", "{{pluginId}}", "config"]
+						},
+						"description": "Update plugin configuration for a site (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Sync Plugins (Admin Utility)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/plugins/sync",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "plugins", "sync"]
+						},
+						"description": "Synchronize plugins from DI container to database (Admin only) - Run this after starting the API for the first time"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Media",
+			"item": [
+				{
+					"name": "Upload File",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "File",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "SiteId",
+									"value": "{{siteId}}",
+									"type": "text"
+								},
+								{
+									"key": "Description",
+									"value": "Sample media file",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/media/upload",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "media", "upload"]
+						},
+						"description": "Upload a media file (Admin/Editor only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Media By Site",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/media/site/{{siteId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "media", "site", "{{siteId}}"]
+						},
+						"description": "Get all media files for a site"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Media File",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/media/{{mediaId}}?mediaType=Image",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "media", "{{mediaId}}"],
+							"query": [
+								{
+									"key": "mediaType",
+									"value": "Image",
+									"description": "Optional: Image, Video, or Document"
+								}
+							]
+						},
+						"description": "Delete a media file (Admin/Editor only)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Content & Export",
+			"item": [
+				{
+					"name": "Get Site Content (JSON)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/content/site/{{siteId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "content", "site", "{{siteId}}"]
+						},
+						"description": "Get site content as JSON via plugin manager"
+					},
+					"response": []
+				},
+				{
+					"name": "Export Site Content",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/content/export/{{siteId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "content", "export", "{{siteId}}"]
+						},
+						"description": "Export all content for a site (pages, products, destinations)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Plugin Content",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/content/site/{{siteId}}/plugin/ProductPlugin",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "content", "site", "{{siteId}}", "plugin", "ProductPlugin"]
+						},
+						"description": "Get content from a specific plugin (ProductPlugin, DestinationPlugin)"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

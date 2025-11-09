@@ -1,0 +1,303 @@
+@CMS.API_HostAddress = http://localhost:5055
+@adminToken = your-admin-token-here
+@editorToken = your-editor-token-here
+
+###############################################################################
+# Authentication Endpoints
+###############################################################################
+
+### Register a new user
+POST {{CMS.API_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "newuser@example.com",
+  "password": "SecurePass123!",
+  "userName": "newuser"
+}
+
+### Login
+POST {{CMS.API_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@cms.com",
+  "password": "Admin123!"
+}
+
+### Refresh Token
+POST {{CMS.API_HostAddress}}/api/auth/refresh
+Content-Type: application/json
+
+{
+  "token": "your-jwt-token",
+  "refreshToken": "your-refresh-token"
+}
+
+### Forgot Password
+POST {{CMS.API_HostAddress}}/api/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "admin@cms.com"
+}
+
+### Reset Password
+POST {{CMS.API_HostAddress}}/api/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "reset-token-from-email",
+  "newPassword": "NewSecurePass123!"
+}
+
+###############################################################################
+# Sites Endpoints
+###############################################################################
+
+### Get all sites
+GET {{CMS.API_HostAddress}}/api/sites
+Authorization: Bearer {{adminToken}}
+
+### Get site by ID
+GET {{CMS.API_HostAddress}}/api/sites/site-id-here
+Authorization: Bearer {{adminToken}}
+
+### Create a new site
+POST {{CMS.API_HostAddress}}/api/sites
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "My New Site",
+  "domain": "mynewsite.example.com",
+  "description": "A description of my site"
+}
+
+### Update a site
+PUT {{CMS.API_HostAddress}}/api/sites/site-id-here
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "id": "site-id-here",
+  "name": "Updated Site Name",
+  "domain": "updated.example.com",
+  "description": "Updated description"
+}
+
+### Delete a site
+DELETE {{CMS.API_HostAddress}}/api/sites/site-id-here
+Authorization: Bearer {{adminToken}}
+
+###############################################################################
+# Pages Endpoints
+###############################################################################
+
+### Get all pages for a site
+GET {{CMS.API_HostAddress}}/api/sites/site-id-here/pages
+Authorization: Bearer {{adminToken}}
+
+### Get page by ID
+GET {{CMS.API_HostAddress}}/api/sites/site-id-here/pages/page-id-here
+Authorization: Bearer {{adminToken}}
+
+### Create a new page
+POST {{CMS.API_HostAddress}}/api/sites/site-id-here/pages
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "siteId": "site-id-here",
+  "pageId": "home",
+  "title": "Home Page",
+  "description": "The home page of the website",
+  "isPublished": true
+}
+
+### Update a page
+PUT {{CMS.API_HostAddress}}/api/sites/site-id-here/pages/page-id-here
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "id": "page-id-here",
+  "siteId": "site-id-here",
+  "pageId": "home",
+  "title": "Updated Home Page",
+  "description": "Updated description",
+  "isPublished": true
+}
+
+### Delete a page
+DELETE {{CMS.API_HostAddress}}/api/sites/site-id-here/pages/page-id-here
+Authorization: Bearer {{adminToken}}
+
+###############################################################################
+# Products Endpoints
+###############################################################################
+
+### Get all products for a site
+GET {{CMS.API_HostAddress}}/api/sites/site-id-here/products
+Authorization: Bearer {{adminToken}}
+
+### Get product by ID
+GET {{CMS.API_HostAddress}}/api/sites/site-id-here/products/product-guid-here
+Authorization: Bearer {{adminToken}}
+
+### Create a new product
+POST {{CMS.API_HostAddress}}/api/sites/site-id-here/products
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "siteId": "site-id-here",
+  "productId": "product-123",
+  "name": "Awesome Product",
+  "description": "Product description",
+  "price": 99.99,
+  "isPublished": true
+}
+
+### Update a product
+PUT {{CMS.API_HostAddress}}/api/sites/site-id-here/products/product-guid-here
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "id": "product-guid-here",
+  "siteId": "site-id-here",
+  "productId": "product-123",
+  "name": "Updated Product",
+  "description": "Updated description",
+  "price": 149.99,
+  "isPublished": true
+}
+
+### Delete a product
+DELETE {{CMS.API_HostAddress}}/api/sites/site-id-here/products/product-guid-here
+Authorization: Bearer {{adminToken}}
+
+###############################################################################
+# Destinations Endpoints
+###############################################################################
+
+### Get all destinations for a site
+GET {{CMS.API_HostAddress}}/api/sites/site-id-here/destinations
+Authorization: Bearer {{adminToken}}
+
+### Get destination by ID
+GET {{CMS.API_HostAddress}}/api/sites/site-id-here/destinations/destination-guid-here
+Authorization: Bearer {{adminToken}}
+
+### Create a new destination
+POST {{CMS.API_HostAddress}}/api/sites/site-id-here/destinations
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "siteId": "site-id-here",
+  "destinationId": "paris",
+  "name": "Paris",
+  "description": "The city of lights",
+  "isPublished": true
+}
+
+### Update a destination
+PUT {{CMS.API_HostAddress}}/api/sites/site-id-here/destinations/destination-guid-here
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "id": "destination-guid-here",
+  "siteId": "site-id-here",
+  "destinationId": "paris",
+  "name": "Paris, France",
+  "description": "Updated description",
+  "isPublished": true
+}
+
+### Delete a destination
+DELETE {{CMS.API_HostAddress}}/api/sites/site-id-here/destinations/destination-guid-here
+Authorization: Bearer {{adminToken}}
+
+###############################################################################
+# Users Endpoints (Admin Only)
+###############################################################################
+
+### Get all users
+GET {{CMS.API_HostAddress}}/api/users
+Authorization: Bearer {{adminToken}}
+
+### Get user by ID
+GET {{CMS.API_HostAddress}}/api/users/user-id-here
+Authorization: Bearer {{adminToken}}
+
+### Create a new user
+POST {{CMS.API_HostAddress}}/api/users
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "email": "newuser@example.com",
+  "userName": "newuser",
+  "password": "SecurePass123!"
+}
+
+### Update a user
+PUT {{CMS.API_HostAddress}}/api/users/user-id-here
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "id": "user-id-here",
+  "email": "updated@example.com",
+  "userName": "updateduser"
+}
+
+### Delete a user
+DELETE {{CMS.API_HostAddress}}/api/users/user-id-here
+Authorization: Bearer {{adminToken}}
+
+###############################################################################
+# Media Endpoints
+###############################################################################
+
+### Get all media for a site
+GET {{CMS.API_HostAddress}}/api/media?siteId=site-id-here
+Authorization: Bearer {{adminToken}}
+
+### Upload media (Note: This requires multipart/form-data)
+# POST {{CMS.API_HostAddress}}/api/media
+# Authorization: Bearer {{adminToken}}
+# Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+# 
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW
+# Content-Disposition: form-data; name="SiteId"
+# 
+# site-id-here
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW
+# Content-Disposition: form-data; name="File"; filename="image.jpg"
+# Content-Type: image/jpeg
+# 
+# (binary data here)
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Delete media
+DELETE {{CMS.API_HostAddress}}/api/media/media-id-here
+Authorization: Bearer {{adminToken}}
+
+###############################################################################
+# Content Endpoints
+###############################################################################
+
+### Get site content (JSON generated from plugins)
+GET {{CMS.API_HostAddress}}/api/content/site/site-id-here
+
+### Export site content (structured export)
+GET {{CMS.API_HostAddress}}/api/content/export/site-id-here
+
+### Get plugin-specific content
+GET {{CMS.API_HostAddress}}/api/content/site/site-id-here/plugin/plugin-system-name
+
+###

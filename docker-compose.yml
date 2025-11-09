@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: cms_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: CMS_DB
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - cms_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # CMS API
+  cms_api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cms_api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=CMS_DB;Username=postgres;Password=postgres
+      - JwtSettings__SecretKey=YourSuperSecretKeyForJWTTokenGeneration123!
+      - JwtSettings__Issuer=CMSApi
+      - JwtSettings__Audience=CMSClient
+      - JwtSettings__ExpiryInMinutes=60
+    ports:
+      - "5000:80"
+      - "5001:443"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - cms_network
+
+  # pgAdmin (Optional - for database management)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: cms_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@cms.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - cms_network
+
+  # MailHog (SMTP testing server)
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: cms_mailhog
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web UI
+    networks:
+      - cms_network
+
+volumes:
+  postgres_data:
+
+networks:
+  cms_network:
+    driver: bridge
