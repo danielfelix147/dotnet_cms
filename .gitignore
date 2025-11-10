@@ -62,8 +62,17 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 
+## Security Test Results
+security_results/
+
 ## Application Settings with Secrets
 appsettings.Development.json
 appsettings.Production.json
 **/appsettings.*.json
 !**/appsettings.json
+
+# SonarQube
+.sonarqube/
+
+# exports
+exports/

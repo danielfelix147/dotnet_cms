@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using CMS.Domain.Plugins;
 using MediatR;
 using CMS.Application.Features.Content.Queries;
@@ -8,6 +9,7 @@ namespace CMS.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize] // Require authentication for all endpoints
 public class ContentController : ControllerBase
 {
     private readonly IPluginManager _pluginManager;

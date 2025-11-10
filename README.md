@@ -161,13 +161,14 @@ The system includes three built-in plugins with automatic database seeding:
 #### Run-CMS-Workflow.ps1
 Complete workflow automation from empty database to JSON export:
 ```powershell
-.\Run-CMS-Workflow.ps1 -BaseUrl "http://localhost:5055" `
+.\Run-CMS-Workflow.ps1 -BaseUrl "http://localhost:5000" `
                        -AdminEmail "admin@cms.com" `
                        -AdminPassword "Admin@123"
 ```
 
 **Features:**
-- Automated 12-step workflow
+- Automated 14-step workflow
+- Creates test users for role-based security testing
 - Idempotent site creation (reuses existing sites)
 - Creates sample content (pages, products, destinations, tours)
 - Exports site configuration to JSON
@@ -175,38 +176,50 @@ Complete workflow automation from empty database to JSON export:
 
 **Steps:**
 1. Admin login → JWT token
-2. Check/create site
-3. Fetch available plugins
-4-6. Enable PageManagement, ProductManagement, TravelManagement plugins
-7. Create sample page
-8. Create sample product
-9. Create sample destination
-10. Create sample tour
-11. Check media endpoint
-12. Export site to JSON file
+2. Create test users (Editor, Viewer) for authorization testing
+3. Check/create site
+4. Fetch available plugins
+5-7. Enable PageManagement, ProductManagement, TravelManagement plugins
+8. Create sample page
+9. Create sample product
+10. Create sample destination
+11. Create sample tour
+12. Check media endpoint
+13. Export site to JSON file (saved to `exports/` folder)
+14. Display test user credentials
+
+**Test User Credentials:**
+- **Admin**: `admin@cms.com` / `Admin@123` (Full access)
+- **Editor**: `editor@cms.com` / `Editor@123` (Read/Write, no Delete)
+- **Viewer**: `viewer@cms.com` / `Viewer@123` (Read-only)
+
+**Export Files**: Site exports are saved to `exports/site_export_{siteId}.json`
 
 #### Cleanup-CMS-Data.ps1
 Automated cleanup script that deletes all resources from an exported site:
 ```powershell
+# Supports files in exports folder or current directory
 .\Cleanup-CMS-Data.ps1 -ExportFile "site_export_xyz.json" `
-                       -BaseUrl "http://localhost:5055" `
+                       -BaseUrl "http://localhost:5000" `
                        -AdminEmail "admin@cms.com" `
                        -AdminPassword "Admin@123"
 ```
 
 **Features:**
-- Reads export JSON file
+- Reads export JSON file (checks both current directory and `exports/` folder)
 - Deletes resources in proper order (child → parent): Tours → Destinations → Products → Pages → Media → Site
 - Graceful error handling (continues on 404s)
 - Progress tracking with counters
 - Perfect for test automation cycles
 
 ### Test Suite
-**Total Tests**: 291 passing ✅
-- Domain Tests: Full entity validation coverage
-- Application Tests: CQRS handlers for all operations
-- Infrastructure Tests: Repository and data access layer
-- Integration Tests: End-to-end API workflow tests
+**Total Tests**: 291+ passing ✅
+
+#### Unit & Integration Tests
+- **Domain Tests**: Full entity validation coverage
+- **Application Tests**: CQRS handlers for all operations
+- **Infrastructure Tests**: Repository and data access layer
+- **Integration Tests**: End-to-end API workflow tests
 
 **Test Coverage:**
 - Sites CRUD operations
@@ -216,6 +229,69 @@ Automated cleanup script that deletes all resources from an exported site:
 - Plugin management
 - Authentication & Authorization
 - Content export functionality
+
+#### Security Tests (Security-Tests.ps1)
+**Total**: 40+ automated security tests across 10 categories
+
+Run `.\Security-Tests.ps1` for comprehensive security testing:
+
+1. **Authentication Security** (3 tests)
+   - Missing token detection
+   - Invalid token rejection
+   - Malformed auth header handling
+
+2. **SQL Injection Protection** (5 tests)
+   - Common SQL injection payloads
+   - Union-based attacks
+   - Comment-based bypasses
+
+3. **XSS Protection** (6 tests)
+   - Script injection
+   - Event handler injection
+   - SVG/iframe injection
+
+4. **CORS Protection** (2 tests)
+   - Unauthorized origin blocking
+   - Missing origin handling
+
+5. **Input Validation** (4 tests)
+   - Missing required fields
+   - Invalid email formats
+   - Empty string values
+
+6. **Authorization Tests** (13+ tests) ✨ NEW
+   - **Unauthenticated**: 401 for protected endpoints
+   - **Admin Role**: Full CRUD permissions
+   - **Editor Role**: Read/write, no delete (403)
+   - **Viewer Role**: Read-only, all modifications forbidden (403)
+
+7. **Security Headers** (6 tests)
+   - X-Frame-Options
+   - X-Content-Type-Options
+   - Content-Security-Policy
+   - Referrer-Policy
+   - X-XSS-Protection
+   - Strict-Transport-Security
+
+8. **Path Traversal Protection** (5 tests)
+   - Directory traversal attempts
+   - Encoded path attacks
+
+9. **Business Logic Security** (3 tests)
+   - Negative price validation
+   - Duplicate domain prevention
+   - Invalid GUID handling
+
+10. **Rate Limiting** (1 test)
+    - Brute force protection
+    - 429 response validation
+
+**Security Test Reports:**
+- HTML report: `security_results/security-test-results-YYYYMMDD-HHMMSS.html`
+- CSV export: `security_results/security-test-results-YYYYMMDD-HHMMSS.csv`
+
+**Prerequisites for Authorization Tests:**
+Run `.\Run-CMS-Workflow.ps1` first to create test users (Editor, Viewer)
 
 ### Configuration
 Key settings in `appsettings.json`:

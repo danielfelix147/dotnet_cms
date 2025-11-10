@@ -4,7 +4,7 @@
 param(
     [Parameter(Mandatory=$true)]
     [string]$ExportFile,
-    [string]$BaseUrl = "http://localhost:5055",
+    [string]$BaseUrl = "http://localhost:5000",
     [string]$AdminEmail = "admin@cms.com",
     [string]$AdminPassword = "Admin@123"
 )
@@ -16,11 +16,22 @@ Write-Host "DOTNET CMS Cleanup Script" -ForegroundColor Cyan
 Write-Host "=====================================" -ForegroundColor Cyan
 Write-Host ""
 
-# Check if export file exists
-if (-not (Test-Path $ExportFile)) {
-    Write-Host "Error: Export file not found: $ExportFile" -ForegroundColor Red
-    exit 1
+# Check if export file exists (support both relative and absolute paths, and exports folder)
+$exportFilePath = $ExportFile
+if (-not (Test-Path $exportFilePath)) {
+    # Try exports folder
+    $exportFilePath = Join-Path "exports" $ExportFile
+    if (-not (Test-Path $exportFilePath)) {
+        Write-Host "Error: Export file not found: $ExportFile" -ForegroundColor Red
+        Write-Host "Tried locations:" -ForegroundColor Yellow
+        Write-Host "  - $ExportFile" -ForegroundColor Gray
+        Write-Host "  - exports\$ExportFile" -ForegroundColor Gray
+        exit 1
+    }
 }
+
+Write-Host "Using export file: $exportFilePath" -ForegroundColor Gray
+Write-Host ""
 
 # Helper function to make API calls
 function Invoke-CMSApi {
@@ -73,8 +84,8 @@ function Invoke-CMSApi {
 
 try {
     # Load the export file
-    Write-Host "Loading export file: $ExportFile" -ForegroundColor Yellow
-    $export = Get-Content $ExportFile -Raw | ConvertFrom-Json
+    Write-Host "Loading export file: $exportFilePath" -ForegroundColor Yellow
+    $export = Get-Content $exportFilePath -Raw | ConvertFrom-Json
     Write-Host "[OK] Export file loaded" -ForegroundColor Green
     Write-Host ""
 

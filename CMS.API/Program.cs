@@ -4,12 +4,17 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
+using AspNetCoreRateLimit;
 using CMS.Application;
 using CMS.Infrastructure;
 using CMS.Infrastructure.Data;
 using CMS.Domain.Entities;
 using CMS.Domain.Plugins;
 using CMS.API;
+using CMS.API.Middleware;
+using CMS.API.Filters;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +23,14 @@ builder.Services.AddControllers(options =>
 {
     // Enable automatic model validation to prevent invalid data
     options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = false;
+    
+    // Add global validation exception filter
+    options.Filters.Add<ValidationExceptionFilter>();
 });
+
+// Add FluentValidation
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<CMS.Application.Features.Auth.Validators.RegisterRequestValidator>();
 
 // Add anti-forgery token support
 builder.Services.AddAntiforgery(options =>
@@ -101,6 +113,70 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+
+// Configure Rate Limiting
+builder.Services.AddMemoryCache();
+
+// Read rate limits from configuration (allows different limits for testing)
+var rateLimitingEnabled = builder.Configuration.GetValue<bool>("RateLimiting:Enabled", true);
+var loginLimit = builder.Configuration.GetValue<int>("RateLimiting:Login:Limit", 5);
+var loginPeriod = builder.Configuration.GetValue<string>("RateLimiting:Login:Period", "1m");
+var registerLimit = builder.Configuration.GetValue<int>("RateLimiting:Register:Limit", 3);
+var registerPeriod = builder.Configuration.GetValue<string>("RateLimiting:Register:Period", "1h");
+var generalPerMinute = builder.Configuration.GetValue<int>("RateLimiting:General:PerMinute", 100);
+var generalPerHour = builder.Configuration.GetValue<int>("RateLimiting:General:PerHour", 1000);
+
+builder.Services.Configure<IpRateLimitOptions>(options =>
+{
+    options.EnableEndpointRateLimiting = rateLimitingEnabled;
+    options.StackBlockedRequests = false;
+    options.HttpStatusCode = 429;
+    options.RealIpHeader = "X-Real-IP";
+    options.ClientIdHeader = "X-ClientId";
+    options.GeneralRules = new List<RateLimitRule>
+    {
+        // Strict limits on authentication endpoints
+        new RateLimitRule
+        {
+            Endpoint = "POST:/api/auth/login",
+            Period = loginPeriod,
+            Limit = loginLimit
+        },
+        new RateLimitRule
+        {
+            Endpoint = "POST:/api/auth/register",
+            Period = registerPeriod,
+            Limit = registerLimit
+        },
+        // General API rate limit
+        new RateLimitRule
+        {
+            Endpoint = "*",
+            Period = "1m",
+            Limit = generalPerMinute
+        },
+        new RateLimitRule
+        {
+            Endpoint = "*",
+            Period = "1h",
+            Limit = generalPerHour
+        }
+    };
+});
+
+// Log rate limiting configuration
+Console.WriteLine("====================================");
+Console.WriteLine($"Environment: {builder.Environment.EnvironmentName}");
+Console.WriteLine("Rate Limiting Configuration:");
+Console.WriteLine($"  Login: {loginLimit} requests per {loginPeriod}");
+Console.WriteLine($"  Register: {registerLimit} requests per {registerPeriod}");
+Console.WriteLine($"  General: {generalPerMinute} requests per minute, {generalPerHour} per hour");
+Console.WriteLine("====================================");
+
+builder.Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+builder.Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+builder.Services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
 
 // Add CORS with secure configuration
 builder.Services.AddCors(options =>
@@ -202,37 +278,26 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.UseCors("DevelopmentCorsPolicy"); // Permissive CORS for development
 }
 else
 {
     app.UseHttpsRedirection(); // Only redirect to HTTPS in production
+}
+
+// Apply security headers to all requests
+app.UseMiddleware<SecurityHeadersMiddleware>();
+
+// Apply rate limiting before authentication
+app.UseIpRateLimiting();
+
+// Use CORS before authentication - this must come early to handle preflight requests
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("DevelopmentCorsPolicy"); // Permissive CORS for development
+}
+else
+{
     app.UseCors("SecureCorsPolicy"); // Secure CORS for production
-    
-    // Add security headers
-    app.Use(async (context, next) =>
-    {
-        // Prevent clickjacking
-        context.Response.Headers["X-Frame-Options"] = "DENY";
-        
-        // Prevent MIME-type sniffing
-        context.Response.Headers["X-Content-Type-Options"] = "nosniff";
-        
-        // XSS Protection (legacy but still useful)
-        context.Response.Headers["X-XSS-Protection"] = "1; mode=block";
-        
-        // Content Security Policy
-        context.Response.Headers["Content-Security-Policy"] = 
-            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:;";
-        
-        // Referrer Policy
-        context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
-        
-        // Permissions Policy
-        context.Response.Headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()";
-        
-        await next();
-    });
 }
 
 app.UseStaticFiles(); // Enable static file serving for uploads

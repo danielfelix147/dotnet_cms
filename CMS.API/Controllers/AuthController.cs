@@ -9,6 +9,7 @@ namespace CMS.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[AllowAnonymous] // Allow anonymous access to auth endpoints
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;

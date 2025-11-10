@@ -9,6 +9,7 @@ namespace CMS.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize] // Require authentication for all endpoints
 public class MediaController : ControllerBase
 {
     private readonly IMediator _mediator;

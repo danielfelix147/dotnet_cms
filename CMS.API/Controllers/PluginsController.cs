@@ -11,6 +11,7 @@ namespace CMS.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize] // Require authentication for all endpoints
 public class PluginsController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;

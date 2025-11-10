@@ -8,6 +8,7 @@ namespace CMS.API.Controllers;
 
 [ApiController]
 [Route("api/sites/{siteId}/products")]
+[Authorize] // Require authentication for all endpoints
 public class ProductsController : ControllerBase
 {
     private readonly IMediator _mediator;

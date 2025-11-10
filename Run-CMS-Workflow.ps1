@@ -2,7 +2,7 @@
 # Executes the full workflow from login to JSON export
 
 param(
-    [string]$BaseUrl = "http://localhost:5055",
+    [string]$BaseUrl = "http://localhost:5000",
     [string]$AdminEmail = "admin@cms.com",
     [string]$AdminPassword = "Admin@123"
 )
@@ -47,7 +47,7 @@ function Invoke-CMSApi {
 
 try {
     # Step 1: Login
-    Write-Host "[1/12] Logging in as Admin..." -ForegroundColor Yellow
+    Write-Host "[1/14] Logging in as Admin..." -ForegroundColor Yellow
     $loginBody = @{
         email = $AdminEmail
         password = $AdminPassword
@@ -61,8 +61,51 @@ try {
         Authorization = "Bearer $token"
     }
 
-    # Step 2: Check/Create Site
-    Write-Host "[2/12] Checking for existing site..." -ForegroundColor Yellow
+    # Step 2: Create test users for each role (for security testing)
+    Write-Host "[2/14] Creating test users for security testing..." -ForegroundColor Yellow
+    
+    $testUsers = @(
+        @{
+            Email = "editor@cms.com"
+            Password = "Editor@123"
+            Role = "Editor"
+            FirstName = "Test"
+            LastName = "Editor"
+        },
+        @{
+            Email = "viewer@cms.com"
+            Password = "Viewer@123"
+            Role = "Viewer"
+            FirstName = "Test"
+            LastName = "Viewer"
+        }
+    )
+
+    foreach ($user in $testUsers) {
+        try {
+            $registerBody = @{
+                email = $user.Email
+                password = $user.Password
+                firstName = $user.FirstName
+                lastName = $user.LastName
+            }
+            
+            $registerResponse = Invoke-CMSApi -Method POST -Endpoint "/api/auth/register" -Body $registerBody -Headers $authHeaders
+            Write-Host "  [OK] Created user: $($user.Email) (Role: $($user.Role))" -ForegroundColor Green
+        }
+        catch {
+            if ($_.Exception.Message -like "*already exists*" -or $_.Exception.Response.StatusCode.value__ -eq 400) {
+                Write-Host "  [INFO] User $($user.Email) already exists" -ForegroundColor DarkGray
+            }
+            else {
+                Write-Host "  [WARNING] Could not create user $($user.Email): $($_.Exception.Message)" -ForegroundColor Yellow
+            }
+        }
+    }
+    Write-Host ""
+
+    # Step 3: Check/Create Site
+    Write-Host "[3/14] Checking for existing site..." -ForegroundColor Yellow
     $siteDomain = "demo.example.com"
     $allSites = Invoke-CMSApi -Method GET -Endpoint "/api/sites" -Headers $authHeaders
     $existingSite = $allSites | Where-Object { $_.domain -eq $siteDomain }
@@ -90,7 +133,7 @@ try {
     Write-Host ""
 
     # Step 3: Get Database Plugins
-    Write-Host "[3/12] Fetching available plugins..." -ForegroundColor Yellow
+    Write-Host "[4/14] Fetching available plugins..." -ForegroundColor Yellow
     $pluginsResponse = Invoke-CMSApi -Method GET -Endpoint "/api/plugins/database" -Headers $authHeaders
     
     $pagePlugin = $pluginsResponse | Where-Object { $_.systemName -eq "PageManagement" }
@@ -108,7 +151,7 @@ try {
     Write-Host ""
 
     # Step 4: Enable Page Plugin
-    Write-Host "[4/12] Enabling PageManagement plugin..." -ForegroundColor Yellow
+    Write-Host "[5/14] Enabling PageManagement plugin..." -ForegroundColor Yellow
     $enablePageBody = @{
         configuration = ""
     }
@@ -117,7 +160,7 @@ try {
     Write-Host ""
 
     # Step 5: Enable Product Plugin
-    Write-Host "[5/12] Enabling ProductManagement plugin..." -ForegroundColor Yellow
+    Write-Host "[6/14] Enabling ProductManagement plugin..." -ForegroundColor Yellow
     $enableProductBody = @{
         configuration = ""
     }
@@ -126,7 +169,7 @@ try {
     Write-Host ""
 
     # Step 6: Enable Travel Plugin
-    Write-Host "[6/12] Enabling TravelManagement plugin..." -ForegroundColor Yellow
+    Write-Host "[7/14] Enabling TravelManagement plugin..." -ForegroundColor Yellow
     $enableTravelBody = @{
         configuration = ""
     }
@@ -135,7 +178,7 @@ try {
     Write-Host ""
 
     # Step 7: Create Page
-    Write-Host "[7/12] Creating a page..." -ForegroundColor Yellow
+    Write-Host "[8/14] Creating a page..." -ForegroundColor Yellow
     $pageBody = @{
         siteId = $siteId
         pageId = "welcome-page"
@@ -151,7 +194,7 @@ try {
     Write-Host ""
 
     # Step 8: Create Product
-    Write-Host "[8/12] Creating a product..." -ForegroundColor Yellow
+    Write-Host "[9/14] Creating a product..." -ForegroundColor Yellow
     $productBody = @{
         siteId = $siteId
         productId = "premium-widget"
@@ -168,7 +211,7 @@ try {
     Write-Host ""
 
     # Step 9: Create Destination
-    Write-Host "[9/12] Creating a destination..." -ForegroundColor Yellow
+    Write-Host "[10/14] Creating a destination..." -ForegroundColor Yellow
     $destinationBody = @{
         siteId = $siteId
         destinationId = "paris"
@@ -184,7 +227,7 @@ try {
     Write-Host ""
 
     # Step 10: Create Tour
-    Write-Host "[10/12] Creating a tour for the destination..." -ForegroundColor Yellow
+    Write-Host "[11/14] Creating a tour for the destination..." -ForegroundColor Yellow
     $tourBody = @{
         siteId = $siteId
         destinationId = $destinationId
@@ -202,7 +245,7 @@ try {
     Write-Host ""
 
     # Step 11: Get Media
-    Write-Host "[11/12] Checking media..." -ForegroundColor Yellow
+    Write-Host "[12/14] Checking media..." -ForegroundColor Yellow
     $mediaResponse = Invoke-CMSApi -Method GET -Endpoint "/api/media/site/$siteId" -Headers $authHeaders
     $mediaCount = $mediaResponse.Count
     Write-Host "[OK] Media endpoint accessible. Media count: $mediaCount" -ForegroundColor Green
@@ -210,10 +253,16 @@ try {
     Write-Host ""
 
     # Step 12: Export Site Configuration
-    Write-Host "[12/12] Exporting site configuration to JSON..." -ForegroundColor Yellow
+    Write-Host "[13/14] Exporting site configuration to JSON..." -ForegroundColor Yellow
     $exportResponse = Invoke-CMSApi -Method GET -Endpoint "/api/content/export/$siteId" -Headers $authHeaders
     
-    $exportFileName = "site_export_$siteId.json"
+    # Create exports directory if it doesn't exist
+    $exportsDir = "exports"
+    if (-not (Test-Path $exportsDir)) {
+        New-Item -ItemType Directory -Path $exportsDir | Out-Null
+    }
+    
+    $exportFileName = Join-Path $exportsDir "site_export_$siteId.json"
     $exportResponse | ConvertTo-Json -Depth 100 | Out-File -FilePath $exportFileName -Encoding UTF8
     
     Write-Host "[OK] Site configuration exported successfully!" -ForegroundColor Green
@@ -233,7 +282,12 @@ try {
     Write-Host "  Tour ID:        $tourId" -ForegroundColor Gray
     Write-Host "  Export File:    $exportFileName" -ForegroundColor Gray
     Write-Host ""
-    Write-Host "You can now review the exported JSON file!" -ForegroundColor Cyan
+    Write-Host "Test User Credentials:" -ForegroundColor Cyan
+    Write-Host "  Admin:  admin@cms.com / Admin@123" -ForegroundColor Gray
+    Write-Host "  Editor: editor@cms.com / Editor@123" -ForegroundColor Gray
+    Write-Host "  Viewer: viewer@cms.com / Viewer@123" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "You can now review the exported JSON file and run security tests!" -ForegroundColor Cyan
 
 }
 catch {
@@ -245,3 +299,4 @@ catch {
     Write-Host ""
     exit 1
 }
+

@@ -10,6 +10,7 @@ namespace CMS.API.Controllers;
 
 [ApiController]
 [Route("api/sites/{siteId}/destinations")]
+[Authorize] // Require authentication for all endpoints
 public class DestinationsController : ControllerBase
 {
     private readonly IMediator _mediator;
