@@ -3,23 +3,23 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CMS.Domain", "CMS.Domain\CMS.Domain.csproj", "{A725E5C9-1F71-47DC-B91B-84CA0266C0C8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CMS.Domain", "src\CMS.Domain\CMS.Domain.csproj", "{A725E5C9-1F71-47DC-B91B-84CA0266C0C8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CMS.Application", "CMS.Application\CMS.Application.csproj", "{D1EB1038-ECAA-423E-88DD-DAC939334274}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CMS.Application", "src\CMS.Application\CMS.Application.csproj", "{D1EB1038-ECAA-423E-88DD-DAC939334274}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CMS.Infrastructure", "CMS.Infrastructure\CMS.Infrastructure.csproj", "{E4A04220-A0F7-406B-800B-D2CCAA7A2D68}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CMS.Infrastructure", "src\CMS.Infrastructure\CMS.Infrastructure.csproj", "{E4A04220-A0F7-406B-800B-D2CCAA7A2D68}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CMS.API", "CMS.API\CMS.API.csproj", "{9F6D094D-2D5C-4372-A07F-7C993E93A31D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CMS.API", "src\CMS.API\CMS.API.csproj", "{9F6D094D-2D5C-4372-A07F-7C993E93A31D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CMS.UI", "CMS.UI\CMS.UI.csproj", "{2E787A13-9A2D-436B-AB7B-B62D02D0D141}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CMS.UI", "src\CMS.UI\CMS.UI.csproj", "{2E787A13-9A2D-436B-AB7B-B62D02D0D141}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CMS.Application.Tests", "CMS.Application.Tests\CMS.Application.Tests.csproj", "{7554A969-827A-482E-BC00-66BF350A15D8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CMS.Application.Tests", "src\CMS.Application.Tests\CMS.Application.Tests.csproj", "{7554A969-827A-482E-BC00-66BF350A15D8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CMS.Infrastructure.Tests", "CMS.Infrastructure.Tests\CMS.Infrastructure.Tests.csproj", "{1FA26398-10AA-471C-9DBE-582577DAB5E5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CMS.Infrastructure.Tests", "src\CMS.Infrastructure.Tests\CMS.Infrastructure.Tests.csproj", "{1FA26398-10AA-471C-9DBE-582577DAB5E5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CMS.Domain.Tests", "CMS.Domain.Tests\CMS.Domain.Tests.csproj", "{2739778A-B74A-421E-9E20-B4211B057380}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CMS.Domain.Tests", "src\CMS.Domain.Tests\CMS.Domain.Tests.csproj", "{2739778A-B74A-421E-9E20-B4211B057380}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CMS.API.IntegrationTests", "CMS.API.IntegrationTests\CMS.API.IntegrationTests.csproj", "{064936ED-AC97-4216-BE8D-F7BA7C0D199A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CMS.API.IntegrationTests", "src\CMS.API.IntegrationTests\CMS.API.IntegrationTests.csproj", "{064936ED-AC97-4216-BE8D-F7BA7C0D199A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

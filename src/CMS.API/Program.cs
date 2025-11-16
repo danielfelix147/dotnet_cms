@@ -15,8 +15,30 @@ using CMS.API.Middleware;
 using CMS.API.Filters;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Serilog;
+
+// Configure Serilog
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File("logs/cms-.log", rollingInterval: RollingInterval.Day)
+    .CreateBootstrapLogger();
+
+try
+{
+    Log.Information("Starting CMS API");
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add Serilog
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File("logs/cms-.log", rollingInterval: RollingInterval.Day));
+
 
 // Add services to the container
 builder.Services.AddControllers(options =>
@@ -113,6 +135,36 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+
+// Add Output Caching
+builder.Services.AddOutputCache(options =>
+{
+    // Default cache profile for all requests
+    options.AddBasePolicy(builder => builder
+        .Expire(TimeSpan.FromMinutes(5))
+        .Tag("default"));
+    
+    // Cache policy for GET requests
+    options.AddPolicy("GetCache", builder => builder
+        .Expire(TimeSpan.FromMinutes(10))
+        .SetVaryByQuery("*")
+        .Tag("get-requests"));
+    
+    // Cache policy for site-specific data
+    options.AddPolicy("SiteCache", builder => builder
+        .Expire(TimeSpan.FromMinutes(15))
+        .SetVaryByRouteValue("siteId")
+        .Tag("site-data"));
+});
+
+// Add Health Checks
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddHealthChecks()
+    .AddNpgSql(
+        connectionString ?? "Host=localhost;Port=5432;Database=CMS_DB;Username=postgres;Password=postgres",
+        name: "database",
+        tags: new[] { "db", "postgresql" })
+    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: new[] { "api" });
 
 // Configure Rate Limiting
 builder.Services.AddMemoryCache();
@@ -302,12 +354,44 @@ else
 
 app.UseStaticFiles(); // Enable static file serving for uploads
 
+// Use output caching
+app.UseOutputCache();
+
+// Map health check endpoints
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready"),
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+
+app.MapHealthChecks("/health/live", new HealthCheckOptions
+{
+    Predicate = _ => false, // No checks, just returns if the app is running
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
+Log.Information("CMS API started successfully");
 app.Run();
+
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
 
 // Make Program accessible to test projects
 public partial class Program { }

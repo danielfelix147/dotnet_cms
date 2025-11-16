@@ -51,6 +51,8 @@ public class CMSDbContext : IdentityDbContext<IdentityUser>
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Domain).IsRequired().HasMaxLength(200);
             entity.HasIndex(e => e.Domain).IsUnique();
+            entity.HasIndex(e => e.IsDeleted); // For soft delete queries
+            entity.HasIndex(e => e.CreatedAt); // For sorting
         });
 
         // Removed custom User entity configuration - using IdentityUser instead
@@ -79,6 +81,8 @@ public class CMSDbContext : IdentityDbContext<IdentityUser>
             entity.HasKey(e => e.Id);
             entity.Property(e => e.SystemName).IsRequired().HasMaxLength(100);
             entity.HasIndex(e => e.SystemName).IsUnique();
+            entity.HasIndex(e => e.IsActive); // For filtering active plugins
+            entity.HasIndex(e => e.IsDeleted); // For soft delete queries
         });
 
         // SitePlugin configuration
@@ -104,6 +108,10 @@ public class CMSDbContext : IdentityDbContext<IdentityUser>
                 .WithMany()
                 .HasForeignKey(e => e.SiteId)
                 .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => e.SiteId); // For filtering by site
+            entity.HasIndex(e => e.PageId); // For filtering by PageId
+            entity.HasIndex(e => new { e.SiteId, e.PageId }).IsUnique(); // Composite index
+            entity.HasIndex(e => e.IsDeleted); // For soft delete queries
         });
 
         // PageContent configuration
@@ -126,6 +134,10 @@ public class CMSDbContext : IdentityDbContext<IdentityUser>
                 .WithMany()
                 .HasForeignKey(e => e.SiteId)
                 .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => e.SiteId); // For filtering by site
+            entity.HasIndex(e => e.ProductId); // For filtering by ProductId
+            entity.HasIndex(e => new { e.SiteId, e.ProductId }).IsUnique(); // Composite index
+            entity.HasIndex(e => e.IsDeleted); // For soft delete queries
         });
 
         // Destination configuration
@@ -137,6 +149,10 @@ public class CMSDbContext : IdentityDbContext<IdentityUser>
                 .WithMany()
                 .HasForeignKey(e => e.SiteId)
                 .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => e.SiteId); // For filtering by site
+            entity.HasIndex(e => e.DestinationId); // For filtering by DestinationId
+            entity.HasIndex(e => new { e.SiteId, e.DestinationId }).IsUnique(); // Composite index
+            entity.HasIndex(e => e.IsDeleted); // For soft delete queries
         });
 
         // Tour configuration
